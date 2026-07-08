@@ -15,7 +15,7 @@ ffmpeg-python
 nudenet>=3.4.2
 insightface>=1.0.1
 mediapipe>=0.10.35
-onnxruntime>=1.27.0
+onnxruntime
 pillow>=12.2.0
 
 # Audio API
@@ -33,6 +33,7 @@ speechbrain>=1.1.0
 structlog>=26.1.0
 torchaudio
 torch
+torchvision
 transformers>=4.38.0
 
 # Others

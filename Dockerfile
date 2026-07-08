@@ -1,22 +1,22 @@
-FROM python:3.10-slim
+FROM python:3.11-slim
 
-# Install system deps (FFmpeg for video/audio, libgl for OpenCV)
-RUN apt-get update && apt-get install -y ffmpeg libavcodec-extra libgl1 libglib2.0-0 \
-    && apt-get clean
+# Install system deps (FFmpeg for video/audio, libgl for OpenCV, libsndfile for torchaudio)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg libavcodec-extra libgl1 libglib2.0-0 libsndfile1 \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# 👇 FIX 1: force numpy version BEFORE requirements
-RUN pip install --no-cache-dir "numpy<2"
+RUN python -m pip install --upgrade pip setuptools wheel
 
-# Copy requirements
-COPY requirements.txt .
+# Copy dependencies and constraints
+COPY requirements.txt constraints.txt ./
 
-# 👇 FIX 2: install CPU-only torch (avoid GPU junk)
-RUN pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu
-
-# Install remaining deps
-RUN pip install --no-cache-dir -r requirements.txt
+# Install all dependencies with pip CPU constraints
+RUN pip install --no-cache-dir \
+    --extra-index-url https://download.pytorch.org/whl/cpu \
+    -c constraints.txt \
+    -r requirements.txt
 
 # Copy source code
 COPY . .
