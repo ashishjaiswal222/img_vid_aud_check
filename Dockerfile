@@ -22,8 +22,11 @@ RUN pip install --no-cache-dir \
 COPY . .
 
 # Pre-download all AI models to bake them directly into the Docker image.
-# This ensures zero-dependency, sub-second startup times in production.
-RUN python scripts/download_models.py
+# We explicitly delete unused InsightFace sub-models to save ~150MB of Docker image space.
+RUN python scripts/download_models.py && \
+    rm -f ~/.insightface/models/buffalo_l/1k3d68.onnx \
+    ~/.insightface/models/buffalo_l/2d106det.onnx \
+    ~/.insightface/models/buffalo_l/genderage.onnx
 
 # Expose the API port
 EXPOSE 8000

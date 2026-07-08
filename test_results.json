@@ -1,0 +1,398 @@
+{
+  "front.png": {
+    "position": "front",
+    "passed": true,
+    "confidence": 51.5332,
+    "primary_reason": null,
+    "failed_reasons": [],
+    "checks": {
+      "person_and_face": {
+        "passed": true,
+        "score": 1.0,
+        "message": null,
+        "details": null
+      },
+      "explicit_content": {
+        "passed": true,
+        "score": 0.0,
+        "message": null,
+        "details": null
+      },
+      "angle_match": {
+        "passed": true,
+        "score": -0.9560014093334078,
+        "message": null,
+        "details": {
+          "detected_angle": "front",
+          "expected_angle": "front"
+        }
+      },
+      "blur": {
+        "passed": true,
+        "score": 476.6245535332738,
+        "message": null,
+        "details": null
+      },
+      "lighting": {
+        "passed": true,
+        "score": 189.96128797881383,
+        "message": null,
+        "details": null
+      },
+      "uneven_lighting": {
+        "passed": true,
+        "score": 0.8065909753373504,
+        "message": null,
+        "details": null
+      },
+      "face_centered": {
+        "passed": true,
+        "score": 0.012543252595155763,
+        "message": null,
+        "details": null
+      },
+      "eyewear": {
+        "passed": true,
+        "score": 0.07464619447453955,
+        "message": null,
+        "details": null
+      },
+      "eyes_open": {
+        "passed": true,
+        "score": 0.39114126009040906,
+        "message": null,
+        "details": null
+      },
+      "face_covered": {
+        "passed": true,
+        "score": 0.0,
+        "message": null,
+        "details": null
+      },
+      "neutral_expression": {
+        "passed": true,
+        "score": 0.0,
+        "message": null,
+        "details": null
+      },
+      "background_cluttered": {
+        "passed": true,
+        "score": 0.0036509212545206937,
+        "message": null,
+        "details": null
+      },
+      "heavy_editing": {
+        "passed": true,
+        "score": 2.01329274950932,
+        "message": null,
+        "details": null
+      }
+    },
+    "processed_in_ms": 3826
+  },
+  "singlefrontfacewithsunglasses.png": {
+    "position": "front",
+    "passed": false,
+    "confidence": 16.7155,
+    "primary_reason": {
+      "code": "EYEWEAR_DETECTED",
+      "message": "Please remove sunglasses, glasses, or objects blocking your face."
+    },
+    "failed_reasons": [
+      {
+        "code": "EYEWEAR_DETECTED",
+        "message": "Please remove sunglasses, glasses, or objects blocking your face."
+      },
+      {
+        "code": "FACE_PARTIALLY_COVERED",
+        "message": "Face partially covered by objects, hands, or phones. Please ensure your full face is visible."
+      }
+    ],
+    "checks": {
+      "person_and_face": {
+        "passed": true,
+        "score": 1.0,
+        "message": null,
+        "details": null
+      },
+      "explicit_content": {
+        "passed": true,
+        "score": 0.0,
+        "message": null,
+        "details": null
+      },
+      "angle_match": {
+        "passed": true,
+        "score": -0.45483599546893927,
+        "message": null,
+        "details": {
+          "detected_angle": "front",
+          "expected_angle": "front"
+        }
+      },
+      "blur": {
+        "passed": true,
+        "score": 17.528175131938394,
+        "message": null,
+        "details": null
+      },
+      "lighting": {
+        "passed": true,
+        "score": 164.17711138404266,
+        "message": null,
+        "details": null
+      },
+      "uneven_lighting": {
+        "passed": true,
+        "score": 0.6035096283545085,
+        "message": null,
+        "details": null
+      },
+      "face_centered": {
+        "passed": true,
+        "score": 0.022727272727272707,
+        "message": null,
+        "details": null
+      },
+      "eyewear": {
+        "passed": false,
+        "score": 0.21236384653003157,
+        "message": "Please remove sunglasses, glasses, or objects blocking your face.",
+        "details": null
+      },
+      "eyes_open": {
+        "passed": true,
+        "score": 0.38215175320445666,
+        "message": null,
+        "details": null
+      },
+      "face_covered": {
+        "passed": false,
+        "score": 0.24352465211399102,
+        "message": "Face partially covered by objects, hands, or phones. Please ensure your full face is visible.",
+        "details": null
+      },
+      "neutral_expression": {
+        "passed": true,
+        "score": 0.0,
+        "message": null,
+        "details": null
+      },
+      "background_cluttered": {
+        "passed": true,
+        "score": 0.0033933525310380474,
+        "message": null,
+        "details": null
+      },
+      "heavy_editing": {
+        "passed": true,
+        "score": 0.607793578220437,
+        "message": null,
+        "details": null
+      }
+    },
+    "processed_in_ms": 2636
+  },
+  "beautiful-cartoon-woman-portrait.jpg": {
+    "position": "front",
+    "passed": false,
+    "confidence": 25.4071,
+    "primary_reason": {
+      "code": "ANGLE_MISMATCH",
+      "message": "This looks like a Left View photo, but it was uploaded to the Front View box. Please upload a photo turned to your front."
+    },
+    "failed_reasons": [
+      {
+        "code": "ANGLE_MISMATCH",
+        "message": "This looks like a Left View photo, but it was uploaded to the Front View box. Please upload a photo turned to your front."
+      },
+      {
+        "code": "FACE_PARTIALLY_COVERED",
+        "message": "Face partially covered by objects, hands, or phones. Please ensure your full face is visible."
+      }
+    ],
+    "checks": {
+      "person_and_face": {
+        "passed": true,
+        "score": 1.0,
+        "message": null,
+        "details": null
+      },
+      "explicit_content": {
+        "passed": true,
+        "score": 0.0,
+        "message": null,
+        "details": null
+      },
+      "angle_match": {
+        "passed": false,
+        "score": -25.619898442792234,
+        "message": "This looks like a Left View photo, but it was uploaded to the Front View box. Please upload a photo turned to your front.",
+        "details": {
+          "detected_angle": "left",
+          "expected_angle": "front"
+        }
+      },
+      "blur": {
+        "passed": true,
+        "score": 77.52499531730587,
+        "message": null,
+        "details": null
+      },
+      "lighting": {
+        "passed": true,
+        "score": 199.3484998695281,
+        "message": null,
+        "details": null
+      },
+      "uneven_lighting": {
+        "passed": true,
+        "score": 0.60675884166406,
+        "message": null,
+        "details": null
+      },
+      "face_centered": {
+        "passed": true,
+        "score": 0.2232730263157895,
+        "message": null,
+        "details": null
+      },
+      "eyewear": {
+        "passed": true,
+        "score": 0.17722167185922194,
+        "message": null,
+        "details": null
+      },
+      "eyes_open": {
+        "passed": true,
+        "score": 0.3060249059309862,
+        "message": null,
+        "details": null
+      },
+      "face_covered": {
+        "passed": false,
+        "score": 0.2442328526878438,
+        "message": "Face partially covered by objects, hands, or phones. Please ensure your full face is visible.",
+        "details": null
+      },
+      "neutral_expression": {
+        "passed": true,
+        "score": 0.0,
+        "message": null,
+        "details": null
+      },
+      "background_cluttered": {
+        "passed": true,
+        "score": 0.001831405122108568,
+        "message": null,
+        "details": null
+      },
+      "heavy_editing": {
+        "passed": true,
+        "score": 0.2895657357596786,
+        "message": null,
+        "details": null
+      }
+    },
+    "processed_in_ms": 6588
+  },
+  "left.png": {
+    "position": "front",
+    "passed": false,
+    "confidence": 26.3502,
+    "primary_reason": {
+      "code": "ANGLE_MISMATCH",
+      "message": "This looks like a Left View photo, but it was uploaded to the Front View box. Please upload a photo turned to your front."
+    },
+    "failed_reasons": [
+      {
+        "code": "ANGLE_MISMATCH",
+        "message": "This looks like a Left View photo, but it was uploaded to the Front View box. Please upload a photo turned to your front."
+      }
+    ],
+    "checks": {
+      "person_and_face": {
+        "passed": true,
+        "score": 1.0,
+        "message": null,
+        "details": null
+      },
+      "explicit_content": {
+        "passed": true,
+        "score": 0.0,
+        "message": null,
+        "details": null
+      },
+      "angle_match": {
+        "passed": false,
+        "score": -52.595815877667036,
+        "message": "This looks like a Left View photo, but it was uploaded to the Front View box. Please upload a photo turned to your front.",
+        "details": {
+          "detected_angle": "left",
+          "expected_angle": "front"
+        }
+      },
+      "blur": {
+        "passed": true,
+        "score": 123.9859485691256,
+        "message": null,
+        "details": null
+      },
+      "lighting": {
+        "passed": true,
+        "score": 187.8561424376252,
+        "message": null,
+        "details": null
+      },
+      "uneven_lighting": {
+        "passed": true,
+        "score": 0.9245662398131199,
+        "message": null,
+        "details": null
+      },
+      "face_centered": {
+        "passed": true,
+        "score": 0.06466262975778547,
+        "message": null,
+        "details": null
+      },
+      "eyewear": {
+        "passed": true,
+        "score": 0.11369736007417167,
+        "message": null,
+        "details": null
+      },
+      "eyes_open": {
+        "passed": true,
+        "score": 0.89719068988229,
+        "message": null,
+        "details": null
+      },
+      "face_covered": {
+        "passed": true,
+        "score": 0.0,
+        "message": null,
+        "details": null
+      },
+      "neutral_expression": {
+        "passed": true,
+        "score": 0.0,
+        "message": null,
+        "details": null
+      },
+      "background_cluttered": {
+        "passed": true,
+        "score": 0.002990967358231068,
+        "message": null,
+        "details": null
+      },
+      "heavy_editing": {
+        "passed": true,
+        "score": 1.3570552802695275,
+        "message": null,
+        "details": null
+      }
+    },
+    "processed_in_ms": 3595
+  }
+}

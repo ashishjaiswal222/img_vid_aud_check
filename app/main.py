@@ -15,6 +15,7 @@ from app.middleware.rate_limit import RateLimitMiddleware
 from app.routes.moderation import moderation_router
 from app.routes.audio import router as audio_router
 from app.routes.photo import router as photo_router
+from app.config import settings
 
 # Setup structlog for unified logging
 logger = structlog.get_logger()
