@@ -2,21 +2,24 @@ FROM python:3.11-slim
 
 # Install system deps (FFmpeg for video/audio, libgl for OpenCV, libsndfile for torchaudio)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ffmpeg libavcodec-extra libgl1 libglib2.0-0 libsndfile1 \
+    ffmpeg libavcodec-extra libgl1 libglib2.0-0 libsndfile1 libgles2 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
+# Ensure local modules can be imported
+ENV PYTHONPATH=/app
+
 RUN python -m pip install --upgrade pip setuptools wheel
 
-# Copy dependencies and constraints
-COPY requirements.txt constraints.txt ./
+# Copy dependencies
+COPY requirements.txt ./
 
-# Install all dependencies with pip CPU constraints
-RUN pip install --no-cache-dir \
-    --extra-index-url https://download.pytorch.org/whl/cpu \
-    -c constraints.txt \
-    -r requirements.txt
+# Force PyTorch CPU installation first
+RUN pip install --no-cache-dir torch torchaudio --index-url https://download.pytorch.org/whl/cpu
+
+# Install the rest of the dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy source code
 COPY . .

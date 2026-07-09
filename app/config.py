@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     
     # Optional Middleware Toggles (Off by default, as Node.js Gateway handles this)
     enable_rate_limits: bool = False
-    enable_max_file_size: bool = False
+    enable_max_file_size: bool = True
     
     # Audio Settings
     hf_token: str = ""

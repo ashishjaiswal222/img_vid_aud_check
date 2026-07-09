@@ -1,0 +1,13 @@
+.venv
+venv
+.git
+.github
+__pycache__
+*.pyc
+.env
+.insightface
+.cache
+models
+panns_data
+yolov8n.pt
+test_results.json
