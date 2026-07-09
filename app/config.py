@@ -11,6 +11,14 @@ CLOUDFRONT_URL = os.getenv("CLOUDFRONT_URL")
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 
+def get_docker_aware_cpu_count():
+    try:
+        # Correctly reads Docker/Kubernetes CPU limits on Linux
+        return len(os.sched_getaffinity(0))
+    except AttributeError:
+        # Fallback for Windows/Mac
+        return os.cpu_count() or 4
+
 class Settings(BaseSettings):
     app_name: str = "Unified Verification API"
     host: str = "0.0.0.0"
@@ -25,11 +33,11 @@ class Settings(BaseSettings):
     hf_token: str = ""
     use_overlap_heuristic_fallback: bool = False
     ffmpeg_bin_dir: str = ""
-    audio_worker_pool_size: int = max(1, (os.cpu_count() or 4) // 2)
+    audio_worker_pool_size: int = max(1, get_docker_aware_cpu_count() // 2)
     audio_request_timeout_seconds: int = 180
     
     # Photo Settings
-    photo_worker_pool_size: int = max(1, (os.cpu_count() or 4) // 2)
+    photo_worker_pool_size: int = max(1, get_docker_aware_cpu_count() // 2)
     photo_batch_timeout_seconds: int = 120
     
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
