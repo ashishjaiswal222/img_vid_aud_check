@@ -2,7 +2,7 @@ FROM python:3.11-slim
 
 # Install system deps (FFmpeg for video/audio, libgl for OpenCV, libsndfile for torchaudio)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ffmpeg libavcodec-extra libgl1 libglib2.0-0 libsndfile1 libgles2 \
+    ffmpeg libavcodec-extra libgl1 libglib2.0-0 libsndfile1 libgles2 libegl1 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
