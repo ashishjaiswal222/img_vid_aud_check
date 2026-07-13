@@ -72,12 +72,42 @@ async def lifespan(app: FastAPI):
     stop_audio_pool()
     stop_photo_pool()
 
+from fastapi.openapi.utils import get_openapi
+
 app = FastAPI(
     title="Unified Moderation & Verification API",
     description="Monolithic API handling Video Moderation, Audio Verification, and Photo Verification.",
     version="1.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
+    openapi_version="3.0.2"
 )
+
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    openapi_schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        openapi_version=app.openapi_version,
+        description=app.description,
+        routes=app.routes,
+    )
+    
+    # Swagger UI bug workaround: force format: binary for list of files
+    try:
+        if "components" in openapi_schema and "schemas" in openapi_schema["components"]:
+            schemas = openapi_schema["components"]["schemas"]
+            for schema_name, schema in schemas.items():
+                if schema_name.startswith("Body_check_batch_audio"):
+                    if "properties" in schema and "files" in schema["properties"]:
+                        schema["properties"]["files"]["items"] = {"type": "string", "format": "binary"}
+    except Exception as e:
+        logger.error(f"Failed to patch openapi: {e}")
+        
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+app.openapi = custom_openapi
 
 MAX_UPLOAD_SIZE = 150 * 1024 * 1024 # 150 MB
 
