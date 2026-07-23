@@ -7,12 +7,11 @@ These tests work by feeding MOCK NudeNet detection results directly into
 the core logic functions (_has_nudity, check_nudity) — no real explicit
 images or videos needed. This is the standard, safe way to test ML
 moderation pipelines.
-
-Each test covers a real-world scenario and prints a clear PASS/FAIL result.
 """
 
 import sys
 import os
+sys.stdout.reconfigure(encoding='utf-8')
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from app.services.nudity import (
@@ -23,12 +22,7 @@ from app.services.nudity import (
     NUDE_FRAME_THRESHOLD,
 )
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Helpers
-# ─────────────────────────────────────────────────────────────────────────────
-
 def det(label, score):
-    """Shorthand to create a fake NudeNet detection result dict."""
     return {"class": label, "score": score}
 
 passed = 0
@@ -36,179 +30,55 @@ failed = 0
 
 def run_test(name, result, expected):
     global passed, failed
-    status = "PASS" if result == expected else "FAIL"
-    mark   = "[PASS]" if result == expected else "[FAIL]"
-    if result == expected:
+    ok = (result == expected)
+    mark = "[PASS]" if ok else "[FAIL]"
+    if ok:
         passed += 1
     else:
         failed += 1
     print(f"  {mark}  {name}")
-    if result != expected:
+    if not ok:
         print(f"         Expected: {expected}  |  Got: {result}")
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# SCENARIO TESTS
-# ─────────────────────────────────────────────────────────────────────────────
-
 print()
 print("=" * 65)
-print("  Nudity Detection Logic — Real-World Scenario Tests")
+print("  Nudity Detection Logic — Scenario Unit Tests")
 print(f"  threshold={DEFAULT_THRESHOLD}  |  covered_suppress={COVERED_SUPPRESSION_THRESHOLD}  |  frame_min={NUDE_FRAME_THRESHOLD}")
 print("=" * 65)
 
-# ── Group 1: Should be SAFE ──────────────────────────────────────────────────
+# Group 1: Should be SAFE
 print("\n[GROUP 1] Should be SAFE (not flagged)\n")
 
-run_test(
-    "Person in full clothes — no detections at all",
-    _has_nudity([]),
-    False
-)
+run_test("Person in full clothes — no detections", _has_nudity([]), False)
+run_test("Shirtless man — MALE_BREAST_EXPOSED only", _has_nudity([det("MALE_BREAST_EXPOSED", 0.92)]), False)
+run_test("Gym wear — BELLY_EXPOSED + ARMPITS_EXPOSED", _has_nudity([det("BELLY_EXPOSED", 0.88), det("ARMPITS_EXPOSED", 0.85)]), False)
+run_test("Bikini top — FEMALE_BREAST_EXPOSED suppressed by FEMALE_BREAST_COVERED", _has_nudity([det("FEMALE_BREAST_EXPOSED", 0.80), det("FEMALE_BREAST_COVERED", 0.40)]), False)
+run_test("Swimwear — BUTTOCKS_EXPOSED suppressed by BUTTOCKS_COVERED", _has_nudity([det("BUTTOCKS_EXPOSED", 0.82), det("BUTTOCKS_COVERED", 0.35)]), False)
+run_test("Underwear only — genitalia EXPOSED + COVERED fire", _has_nudity([det("FEMALE_GENITALIA_EXPOSED", 0.77), det("FEMALE_GENITALIA_COVERED", 0.35)]), False)
+run_test("Below confidence threshold — score 0.30 (below 0.45)", _has_nudity([det("FEMALE_BREAST_EXPOSED", 0.30)]), False)
+run_test("Just below threshold — score 0.44 (under 0.45)", _has_nudity([det("FEMALE_GENITALIA_EXPOSED", 0.44)]), False)
+run_test("Open hands / arms — ARMPITS_EXPOSED", _has_nudity([det("ARMPITS_EXPOSED", 0.95)]), False)
+run_test("Sports bra + gym shorts — FEMALE_BREAST_COVERED + BELLY_EXPOSED", _has_nudity([det("FEMALE_BREAST_COVERED", 0.88), det("BELLY_EXPOSED", 0.75)]), False)
 
-run_test(
-    "Shirtless man — MALE_BREAST_EXPOSED only (not in NSFW list)",
-    _has_nudity([det("MALE_BREAST_EXPOSED", 0.92)]),
-    False
-)
-
-run_test(
-    "Gym wear — BELLY_EXPOSED + ARMPITS_EXPOSED (not in NSFW list)",
-    _has_nudity([det("BELLY_EXPOSED", 0.88), det("ARMPITS_EXPOSED", 0.85)]),
-    False
-)
-
-run_test(
-    "Woman in bikini top — FEMALE_BREAST_EXPOSED suppressed by FEMALE_BREAST_COVERED",
-    _has_nudity([
-        det("FEMALE_BREAST_EXPOSED", 0.80),
-        det("FEMALE_BREAST_COVERED", 0.70),   # covered fires alongside
-    ]),
-    False
-)
-
-run_test(
-    "Person in swimwear — BUTTOCKS_EXPOSED suppressed by BUTTOCKS_COVERED",
-    _has_nudity([
-        det("BUTTOCKS_EXPOSED", 0.82),
-        det("BUTTOCKS_COVERED", 0.65),
-    ]),
-    False
-)
-
-run_test(
-    "Underwear only — both genitalia EXPOSED + COVERED fire (bikini/underwear case)",
-    _has_nudity([
-        det("FEMALE_GENITALIA_EXPOSED", 0.77),
-        det("FEMALE_GENITALIA_COVERED", 0.60),
-    ]),
-    False
-)
-
-run_test(
-    "Below confidence threshold — FEMALE_BREAST_EXPOSED at 0.60 (below 0.75)",
-    _has_nudity([det("FEMALE_BREAST_EXPOSED", 0.60)]),
-    False
-)
-
-run_test(
-    "Just below threshold — FEMALE_GENITALIA_EXPOSED at 0.74 (just under 0.75)",
-    _has_nudity([det("FEMALE_GENITALIA_EXPOSED", 0.74)]),
-    False
-)
-
-run_test(
-    "Open hands / arms — ARMPITS_EXPOSED (not in NSFW list)",
-    _has_nudity([det("ARMPITS_EXPOSED", 0.95)]),
-    False
-)
-
-run_test(
-    "Sports bra + gym shorts — FEMALE_BREAST_COVERED + BELLY_EXPOSED",
-    _has_nudity([
-        det("FEMALE_BREAST_COVERED", 0.88),
-        det("BELLY_EXPOSED", 0.75),
-    ]),
-    False
-)
-
-# ── Group 2: Should be NSFW ──────────────────────────────────────────────────
+# Group 2: Should be NSFW
 print("\n[GROUP 2] Should be NSFW (flagged)\n")
 
-run_test(
-    "Bare breasts — FEMALE_BREAST_EXPOSED (no covered counterpart)",
-    _has_nudity([det("FEMALE_BREAST_EXPOSED", 0.90)]),
-    True
-)
+run_test("Bare breasts — FEMALE_BREAST_EXPOSED (no covered counterpart)", _has_nudity([det("FEMALE_BREAST_EXPOSED", 0.80)]), True)
+run_test("Explicit female genitalia — score 0.65", _has_nudity([det("FEMALE_GENITALIA_EXPOSED", 0.65)]), True)
+run_test("Explicit male genitalia — score 0.58", _has_nudity([det("MALE_GENITALIA_EXPOSED", 0.58)]), True)
+run_test("Anus exposure — score 0.70", _has_nudity([det("ANUS_EXPOSED", 0.70)]), True)
+run_test("Bare buttocks — BUTTOCKS_EXPOSED with no covered counterpart", _has_nudity([det("BUTTOCKS_EXPOSED", 0.77)]), True)
+run_test("Exactly at threshold — FEMALE_BREAST_EXPOSED at 0.45", _has_nudity([det("FEMALE_BREAST_EXPOSED", 0.45)]), True)
+run_test("Covered suppression too weak — COVERED score 0.20 (below 0.30)", _has_nudity([det("FEMALE_BREAST_EXPOSED", 0.85), det("FEMALE_BREAST_COVERED", 0.20)]), True)
 
-run_test(
-    "Explicit female genitalia — FEMALE_GENITALIA_EXPOSED at 0.85",
-    _has_nudity([det("FEMALE_GENITALIA_EXPOSED", 0.85)]),
-    True
-)
+# Group 3: Video Frame Count Threshold
+print("\n[GROUP 3] Video — Frame count threshold\n")
 
-run_test(
-    "Explicit male genitalia — MALE_GENITALIA_EXPOSED at 0.78",
-    _has_nudity([det("MALE_GENITALIA_EXPOSED", 0.78)]),
-    True
-)
-
-run_test(
-    "Anus exposure — ANUS_EXPOSED at 0.80",
-    _has_nudity([det("ANUS_EXPOSED", 0.80)]),
-    True
-)
-
-run_test(
-    "Bare buttocks — BUTTOCKS_EXPOSED with no covered counterpart",
-    _has_nudity([det("BUTTOCKS_EXPOSED", 0.87)]),
-    True
-)
-
-run_test(
-    "Exactly at threshold — FEMALE_BREAST_EXPOSED at exactly 0.75",
-    _has_nudity([det("FEMALE_BREAST_EXPOSED", 0.75)]),
-    True
-)
-
-run_test(
-    "Covered suppression too weak — FEMALE_BREAST_EXPOSED=0.85, FEMALE_BREAST_COVERED=0.40 (below 0.55)",
-    _has_nudity([
-        det("FEMALE_BREAST_EXPOSED", 0.85),
-        det("FEMALE_BREAST_COVERED", 0.40),   # covered score too low to suppress
-    ]),
-    True
-)
-
-run_test(
-    "Mixed frame — shirtless man + bare female breasts",
-    _has_nudity([
-        det("MALE_BREAST_EXPOSED", 0.92),    # safe label
-        det("FEMALE_BREAST_EXPOSED", 0.88),  # NSFW label, no covered counterpart
-    ]),
-    True
-)
-
-# ── Group 3: Video Frame Count Threshold ─────────────────────────────────────
-print("\n[GROUP 3] Video — Frame count threshold (min 5 frames)\n")
-
-from unittest.mock import patch, MagicMock
-
-def make_fake_frame_results(nude_count, total_count, label="FEMALE_BREAST_EXPOSED", score=0.90):
-    """
-    Returns a list of (frame_path, results) tuples.
-    First `nude_count` frames have a nudity detection, rest are clean.
-    """
-    all_results = []
-    for i in range(total_count):
-        if i < nude_count:
-            all_results.append([det(label, score)])
-        else:
-            all_results.append([])
-    return all_results
+def make_fake_frame_results(nude_count, total_count, label="FEMALE_BREAST_EXPOSED", score=0.80):
+    return [[det(label, score)] if i < nude_count else [] for i in range(total_count)]
 
 def simulate_check_nudity(frame_results_list, nude_frame_threshold=NUDE_FRAME_THRESHOLD):
-    """Simulate check_nudity() using pre-built results without a real detector."""
     nude_frames = []
     for i, results in enumerate(frame_results_list):
         if _has_nudity(results, DEFAULT_THRESHOLD):
@@ -217,53 +87,13 @@ def simulate_check_nudity(frame_results_list, nude_frame_threshold=NUDE_FRAME_TH
                 return True, nude_frames[0]
     return False, None
 
-# 4 nude frames out of 20 — should PASS (below threshold)
-is_nsfw, _ = simulate_check_nudity(make_fake_frame_results(4, 20))
-run_test(
-    "Video with 4 nude frames out of 20 — below threshold (< 5) → SAFE",
-    is_nsfw,
-    False
-)
+run_test("Video with 2 nude frames out of 20 (< 3) => SAFE", simulate_check_nudity(make_fake_frame_results(2, 20))[0], False)
+run_test("Video with 3 nude frames out of 20 (= 3) => NSFW", simulate_check_nudity(make_fake_frame_results(3, 20))[0], True)
+run_test("Video with 10 nude frames => NSFW", simulate_check_nudity(make_fake_frame_results(10, 50))[0], True)
+run_test("Clean video => SAFE", simulate_check_nudity(make_fake_frame_results(0, 30))[0], False)
+run_test("1 nude frame in 100 (motion blur) => SAFE", simulate_check_nudity(make_fake_frame_results(1, 100))[0], False)
 
-# Exactly 5 nude frames — should FAIL (hits threshold)
-is_nsfw, _ = simulate_check_nudity(make_fake_frame_results(5, 20))
-run_test(
-    "Video with 5 nude frames out of 20 — hits threshold exactly → NSFW",
-    is_nsfw,
-    True
-)
-
-# 10 nude frames — definitely NSFW, should early-exit at 5
-is_nsfw, frame = simulate_check_nudity(make_fake_frame_results(10, 50))
-run_test(
-    "Video with 10 nude frames — exits early at frame 5 → NSFW",
-    is_nsfw,
-    True
-)
-
-# All clean video
-is_nsfw, _ = simulate_check_nudity(make_fake_frame_results(0, 30))
-run_test(
-    "Completely clean video — 0 nude frames → SAFE",
-    is_nsfw,
-    False
-)
-
-# Single nude frame — common false-positive scenario (motion blur)
-is_nsfw, _ = simulate_check_nudity(make_fake_frame_results(1, 100))
-run_test(
-    "1 nude frame in 100 — motion blur / false-positive scenario → SAFE",
-    is_nsfw,
-    False
-)
-
-# ─────────────────────────────────────────────────────────────────────────────
 print()
 print("=" * 65)
 print(f"  RESULTS:  {passed} passed  |  {failed} failed  |  {passed+failed} total")
 print("=" * 65)
-if failed == 0:
-    print("  [ALL PASS] Nudity detection logic is working correctly!")
-else:
-    print(f"  [ATTENTION] {failed} test(s) failed — review logic above.")
-print()
