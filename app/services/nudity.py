@@ -27,9 +27,10 @@ NUDE_LABELS = {
 # If a "covered" or context counterpart is detected with sufficient confidence,
 # we treat it as a false-positive (e.g. bikini, sports bra, gym shorts, male torso ornaments).
 COVERED_COUNTERPARTS = {
-    "FEMALE_GENITALIA_EXPOSED": ["FEMALE_GENITALIA_COVERED"],
-    "ANUS_EXPOSED":             ["ANUS_COVERED"],
-    "BUTTOCKS_EXPOSED":         ["BUTTOCKS_COVERED"],
+    "FEMALE_GENITALIA_EXPOSED": ["FEMALE_GENITALIA_COVERED", "BUTTOCKS_COVERED"],
+    "MALE_GENITALIA_EXPOSED":   ["MALE_GENITALIA_COVERED"],
+    "ANUS_EXPOSED":             ["ANUS_COVERED", "BUTTOCKS_COVERED"],
+    "BUTTOCKS_EXPOSED":         ["BUTTOCKS_COVERED", "FEMALE_GENITALIA_COVERED"],
     "FEMALE_BREAST_EXPOSED":    ["FEMALE_BREAST_COVERED", "BELLY_EXPOSED", "ARMPITS_EXPOSED", "MALE_BREAST_EXPOSED"],
 }
 
