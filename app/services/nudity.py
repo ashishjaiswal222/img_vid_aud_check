@@ -12,20 +12,26 @@ def _get_detector():
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# STRICTLY NSFW: only truly explicit / genitalia exposure counts as nudity.
-# Bikinis, underwear, gym wear, open hands, and similar are NOT flagged.
+# STRICTLY NSFW: only truly explicit exposure counts as nudity.
+# Bikinis, gym wear, sports bras etc. are handled by the covered-counterpart
+# suppression logic below — NOT by removing labels from this set.
 #
-# NOT included (intentionally):
-#   - FEMALE_BREAST_EXPOSED   → covers bikini tops / sports bras false-positives
-#   - BUTTOCKS_EXPOSED        → covers swimwear / gym shorts false-positives
-#   - MALE_BREAST_EXPOSED     → normal (shirtless men are not nudity)
-#   - BELLY_EXPOSED           → crop-tops, gym wear
-#   - ARMPITS_EXPOSED         → sleeveless clothes, open hands
-# ─────────────────────────────────────────────────────────────────────────────
+# How bikini/underwear safety works:
+#   When someone wears a bikini top, NudeNet fires BOTH:
+#     - FEMALE_BREAST_EXPOSED  (the model thinks it sees skin)
+#     - FEMALE_BREAST_COVERED  (the model also sees the fabric)
+#   The suppression logic below cancels the EXPOSED flag when COVERED
+#   is also detected above COVERED_SUPPRESSION_THRESHOLD.
+#
+#   When someone has NO top at all, only FEMALE_BREAST_EXPOSED fires
+#   -> correctly flagged as NSFW.
+# -----------------------------------------------------------------------------
 NUDE_LABELS = {
     "FEMALE_GENITALIA_EXPOSED",
     "MALE_GENITALIA_EXPOSED",
     "ANUS_EXPOSED",
+    "FEMALE_BREAST_EXPOSED",   # bare breasts — bikini/sports bra suppressed via COVERED logic
+    "BUTTOCKS_EXPOSED",        # fully bare buttocks — swimwear suppressed via COVERED logic
 }
 
 # If a "covered" counterpart is detected with high confidence alongside an

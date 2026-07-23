@@ -42,15 +42,17 @@ The NudeNet-based nudity detector has been tuned to significantly reduce false p
 | Setting | Old Value | New Value | Reason |
 |---|---|---|---|
 | Detection confidence threshold | `0.6` | `0.75` | Reduces false positives |
-| `FEMALE_BREAST_EXPOSED` label | Flagged | **Not flagged** | Bikini tops and sports bras trigger this |
-| `BUTTOCKS_EXPOSED` label | Flagged | **Not flagged** | Swimwear / gym shorts trigger this |
-| Covered counterpart suppression | Not present | **Added** | If `_COVERED` label fires alongside `_EXPOSED`, flag is suppressed |
+| `FEMALE_BREAST_EXPOSED` label | Flagged | **Still flagged** | Bare breasts are NSFW; bikini/sports bra handled by covered suppression |
+| `BUTTOCKS_EXPOSED` label | Flagged | **Still flagged** | Fully bare buttocks are NSFW; swimwear handled by covered suppression |
+| Covered counterpart suppression | Not present | **Added** | If `_COVERED` label fires alongside `_EXPOSED`, flag is suppressed (handles bikini/underwear) |
 | Min nude frames to flag video | 1 frame | **5 frames** | Single blurry/false-positive frames no longer block a video |
 
 ### Only these labels trigger NSFW:
 - `FEMALE_GENITALIA_EXPOSED`
 - `MALE_GENITALIA_EXPOSED`
 - `ANUS_EXPOSED`
+- `FEMALE_BREAST_EXPOSED` *(suppressed when `FEMALE_BREAST_COVERED` also detected — handles bikini/sports bra)*
+- `BUTTOCKS_EXPOSED` *(suppressed when `BUTTOCKS_COVERED` also detected — handles swimwear)*
 
 ### Tunable constants (top of `nudity.py`):
 ```python

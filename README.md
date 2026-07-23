@@ -104,17 +104,24 @@ Only genuinely explicit exposure triggers a block:
 | `FEMALE_GENITALIA_EXPOSED` | Explicit female genitalia |
 | `MALE_GENITALIA_EXPOSED` | Explicit male genitalia |
 | `ANUS_EXPOSED` | Explicit anus exposure |
+| `FEMALE_BREAST_EXPOSED` | Bare female breasts (no top/bra) |
+| `BUTTOCKS_EXPOSED` | Fully bare buttocks |
 
 ### What is NOT flagged (Safe)
 The following are intentionally excluded to prevent false positives:
 
 | Label | Reason |
 |---|---|
-| `FEMALE_BREAST_EXPOSED` | Bikini tops / sports bras trigger this |
-| `BUTTOCKS_EXPOSED` | Swimwear / gym shorts trigger this |
 | `MALE_BREAST_EXPOSED` | Shirtless men are not nudity |
 | `BELLY_EXPOSED` | Crop-tops, gym wear |
 | `ARMPITS_EXPOSED` | Sleeveless clothes, open hands/arms |
+
+### How bikini / swimwear / sports bra is handled (NOT flagged)
+When someone wears a bikini top or sports bra, NudeNet detects **both**:
+- `FEMALE_BREAST_EXPOSED` (sees skin around the fabric)
+- `FEMALE_BREAST_COVERED` (sees the fabric itself)
+
+The **covered-counterpart suppression** logic cancels the `EXPOSED` flag when the `COVERED` counterpart is detected above `COVERED_SUPPRESSION_THRESHOLD (0.55)`. When someone wears **nothing at all**, only `FEMALE_BREAST_EXPOSED` fires — correctly flagged as NSFW.
 
 ### Key Tuning Parameters
 
