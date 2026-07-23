@@ -45,6 +45,11 @@ DEFAULT_THRESHOLD = 0.75
 # If a covered-counterpart is detected above this score we suppress the flag.
 COVERED_SUPPRESSION_THRESHOLD = 0.55
 
+# Minimum number of video frames that must be flagged as nude before the
+# entire video is marked NSFW.  A single bad frame (motion blur, false
+# positive) is ignored; only a sustained pattern triggers a block.
+NUDE_FRAME_THRESHOLD = 5
+
 
 def _is_suppressed_by_covered(label: str, results: list, covered_threshold: float) -> bool:
     """Return True if a covered counterpart is detected with enough confidence."""
@@ -72,18 +77,31 @@ def _has_nudity(results: list, threshold: float = DEFAULT_THRESHOLD) -> bool:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 🎥 VIDEO (frames)
-# ─────────────────────────────────────────────────────────────────────────────
-def check_nudity(frames, threshold=DEFAULT_THRESHOLD):
+# VIDEO (frames)
+# -----------------------------------------------------------------------------
+def check_nudity(frames, threshold=DEFAULT_THRESHOLD, nude_frame_threshold=NUDE_FRAME_THRESHOLD):
     """
     Scan extracted video frames for nudity.
-    Returns (True, violating_frame_path) or (False, None).
+
+    A video is only marked NSFW when at least `nude_frame_threshold` frames
+    are independently detected as nude (default = 5).  This prevents a single
+    blurry / falsely-detected frame from blocking an otherwise clean video.
+
+    Returns:
+        (True,  first_violating_frame_path)  if nude frame count >= threshold
+        (False, None)                         otherwise
     """
+    nude_frames = []
+
     for frame in frames:
         results = _get_detector().detect(frame)
         if _has_nudity(results, threshold):
-            return True, frame
+            nude_frames.append(frame)
+            # Early exit once we have enough evidence — no need to scan further
+            if len(nude_frames) >= nude_frame_threshold:
+                return True, nude_frames[0]  # return first violating frame
 
+    # Not enough nude frames — treat as safe
     return False, None
 
 
