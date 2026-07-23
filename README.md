@@ -89,3 +89,49 @@ Once the server is running, visit the interactive Swagger UI to test the endpoin
 - `/moderation/analyze`: Video/Image moderation
 - `/moderation/audio-verify/check`: Audio verification (speaker count, overlap, clarity)
 - `/moderation/photo-verify/check-single`: Photo KYC validation (blur, lighting, spoofing, identity matching)
+
+---
+
+## Video & Image Moderation — Nudity Detection Behaviour
+
+The nudity detection engine (`app/services/nudity.py`) uses [NudeNet](https://github.com/notAI-tech/NudeNet) with the following tuned settings to avoid false positives on legitimate content like gym wear, swimwear, and sports clothing.
+
+### What IS flagged (NSFW)
+Only genuinely explicit exposure triggers a block:
+
+| Label | Description |
+|---|---|
+| `FEMALE_GENITALIA_EXPOSED` | Explicit female genitalia |
+| `MALE_GENITALIA_EXPOSED` | Explicit male genitalia |
+| `ANUS_EXPOSED` | Explicit anus exposure |
+| `FEMALE_BREAST_EXPOSED` | Bare female breasts (no top/bra) |
+| `BUTTOCKS_EXPOSED` | Fully bare buttocks |
+
+### What is NOT flagged (Safe)
+The following are intentionally excluded to prevent false positives:
+
+| Label | Reason |
+|---|---|
+| `MALE_BREAST_EXPOSED` | Shirtless men are not nudity |
+| `BELLY_EXPOSED` | Crop-tops, gym wear |
+| `ARMPITS_EXPOSED` | Sleeveless clothes, open hands/arms |
+
+### How bikini / swimwear / sports bra is handled (NOT flagged)
+When someone wears a bikini top or sports bra, NudeNet detects **both**:
+- `FEMALE_BREAST_EXPOSED` (sees skin around the fabric)
+- `FEMALE_BREAST_COVERED` (sees the fabric itself)
+
+The **covered-counterpart suppression** logic cancels the `EXPOSED` flag when the `COVERED` counterpart is detected above `COVERED_SUPPRESSION_THRESHOLD (0.55)`. When someone wears **nothing at all**, only `FEMALE_BREAST_EXPOSED` fires — correctly flagged as NSFW.
+
+### Key Tuning Parameters
+
+| Constant | Value | Purpose |
+|---|---|---|
+| `DEFAULT_THRESHOLD` | `0.50` | Minimum confidence score per detection (perfectly calibrated for high and low FPS extractions) |
+| `COVERED_SUPPRESSION_THRESHOLD` | `0.25` | If a `_COVERED` or context counterpart label is detected in current or adjacent frames (±4 window), the exposed flag is suppressed (handles bikinis, sports bras, gym shorts, male torso ornaments) |
+| `NUDE_FRAME_THRESHOLD` | `3` | **Video only** — minimum number of unsuppressed frames that must independently flag as nude before the video is marked NSFW. Prevents single blurry or falsely-detected frames from blocking a clean video. |
+
+### Video vs Image logic
+
+- **Video**: Scans frames with temporal windowed suppression (checking adjacent ±4 frames for clothing/ornament indicators). Only marks NSFW if **3 or more frames** are detected as unsuppressed nude.
+- **Image**: Single image is flagged on **1 detection** above the confidence threshold without covered suppression firing.

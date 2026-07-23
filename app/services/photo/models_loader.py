@@ -60,8 +60,8 @@ class MediaPipeModels:
         self.face_detector = mp.tasks.vision.FaceDetector.create_from_options(fd_options)
 
         # 2. Pose Landmarker
-        pl_path = os.path.join(models_dir, "pose_landmarker_heavy.task")
-        self._ensure_model_exists(pl_path, "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/1/pose_landmarker_heavy.task")
+        pl_path = os.path.join(models_dir, "pose_landmarker_lite.task")
+        self._ensure_model_exists(pl_path, "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task")
         pl_options = mp.tasks.vision.PoseLandmarkerOptions(
             base_options=mp.tasks.BaseOptions(model_asset_path=pl_path),
             output_segmentation_masks=False
@@ -94,8 +94,12 @@ class MediaPipeModels:
         with FileLock(global_lock_path):
             # 5. Identity Verification (InsightFace)
             # Note: This will download 'buffalo_l' models to ~/.insightface on first run if missing.
-            self.face_analysis = FaceAnalysis(name='buffalo_l', providers=['CPUExecutionProvider'])
-            self.face_analysis.prepare(ctx_id=0, det_size=(640, 640))
+            self.face_analysis = FaceAnalysis(
+                name='buffalo_l', 
+                allowed_modules=['detection', 'recognition'], 
+                providers=['CPUExecutionProvider']
+            )
+            self.face_analysis.prepare(ctx_id=0, det_size=(480, 480))
     
             # 6. Explicit Content (NudeNet)
             # Note: This downloads the default model (~80MB) to ~/.NudeNet on first run if missing.
