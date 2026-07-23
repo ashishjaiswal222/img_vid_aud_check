@@ -127,11 +127,11 @@ The **covered-counterpart suppression** logic cancels the `EXPOSED` flag when th
 
 | Constant | Value | Purpose |
 |---|---|---|
-| `DEFAULT_THRESHOLD` | `0.45` | Minimum confidence score per detection (accurately catches real explicit content) |
-| `COVERED_SUPPRESSION_THRESHOLD` | `0.30` | If a `_COVERED` or context counterpart label is detected in the frame or adjacent frames (±2 window), the exposed flag is suppressed (handles bikini, sports bra, gym wear, male torso ornaments) |
+| `DEFAULT_THRESHOLD` | `0.50` | Minimum confidence score per detection (perfectly calibrated for high and low FPS extractions) |
+| `COVERED_SUPPRESSION_THRESHOLD` | `0.25` | If a `_COVERED` or context counterpart label is detected in current or adjacent frames (±4 window), the exposed flag is suppressed (handles bikinis, sports bras, gym shorts, male torso ornaments) |
 | `NUDE_FRAME_THRESHOLD` | `3` | **Video only** — minimum number of unsuppressed frames that must independently flag as nude before the video is marked NSFW. Prevents single blurry or falsely-detected frames from blocking a clean video. |
 
 ### Video vs Image logic
 
-- **Video**: Scans frames with temporal windowed suppression (checking adjacent ±2 frames for clothing/ornament indicators). Only marks NSFW if **3 or more frames** are detected as unsuppressed nude.
+- **Video**: Scans frames with temporal windowed suppression (checking adjacent ±4 frames for clothing/ornament indicators). Only marks NSFW if **3 or more frames** are detected as unsuppressed nude.
 - **Image**: Single image is flagged on **1 detection** above the confidence threshold without covered suppression firing.

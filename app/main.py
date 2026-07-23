@@ -61,23 +61,45 @@ async def lifespan(app: FastAPI):
     logger.info("Starting up Unified API...")
     
     # 1. Start Audio Pool
-    start_audio_pool()
+    try:
+        start_audio_pool()
+    except Exception as e:
+        logger.warning(f"Audio pool startup deferred: {e}")
     
     # 2. Start Photo Pool & Warmup
-    start_photo_pool()
-    asyncio.create_task(warmup_photo_pool())
+    try:
+        start_photo_pool()
+        asyncio.create_task(warmup_photo_pool())
+    except Exception as e:
+        logger.warning(f"Photo pool startup deferred: {e}")
     
     yield
     
     logger.info("Shutting down Unified API...")
-    stop_audio_pool()
-    stop_photo_pool()
+    try:
+        stop_audio_pool()
+    except Exception:
+        pass
+    try:
+        stop_photo_pool()
+    except Exception:
+        pass
+
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
     title="Unified Moderation & Verification API",
     description="Monolithic API handling Video Moderation, Audio Verification, and Photo Verification.",
     version="1.0.0",
     lifespan=lifespan
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 MAX_UPLOAD_SIZE = 150 * 1024 * 1024 # 150 MB

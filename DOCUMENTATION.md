@@ -41,22 +41,22 @@ The NudeNet-based nudity detector has been tuned to significantly reduce false p
 
 | Setting | Old Value | New Value | Reason |
 |---|---|---|---|
-| Detection confidence threshold | `0.60` | `0.45` | Accurately catches real explicit content without missing lower-contrast scenes |
-| `FEMALE_BREAST_EXPOSED` label | Flagged | **Flagged with window suppression** | Bare breasts are NSFW; bikini/sports bra/deity torso handled via temporal window covered suppression |
-| `BUTTOCKS_EXPOSED` label | Flagged | **Flagged with window suppression** | Bare buttocks are NSFW; swimwear handled via temporal window covered suppression |
-| Covered counterpart suppression threshold | Not present | `0.30` | If `_COVERED` or context counterpart fires in current or adjacent ±2 frames, flag is suppressed |
+| Detection confidence threshold | `0.60` | `0.50` | Calibrated across high (10 FPS) and standard FPS extractions |
+| `FEMALE_BREAST_EXPOSED` label | Flagged | **Flagged with window suppression** | Bare breasts are NSFW; bikini/sports bra/deity torso handled via ±4 frame temporal window suppression |
+| `BUTTOCKS_EXPOSED` label | Flagged | **Flagged with window suppression** | Bare buttocks are NSFW; swimwear handled via ±4 frame temporal window suppression |
+| Covered counterpart suppression threshold | Not present | `0.25` | If `_COVERED` or context counterpart fires in current or adjacent ±4 frames, flag is suppressed |
 | Min nude frames to flag video | 1 frame | **3 frames** | Single blurry/false-positive frames no longer block a video |
 
 ### Only these labels trigger NSFW:
 - `FEMALE_GENITALIA_EXPOSED`
 - `MALE_GENITALIA_EXPOSED`
 - `ANUS_EXPOSED`
-- `FEMALE_BREAST_EXPOSED` *(suppressed when `FEMALE_BREAST_COVERED`, `BELLY_EXPOSED`, or `MALE_BREAST_EXPOSED` also detected in ±2 frame window)*
-- `BUTTOCKS_EXPOSED` *(suppressed when `BUTTOCKS_COVERED` also detected in ±2 frame window)*
+- `FEMALE_BREAST_EXPOSED` *(suppressed when `FEMALE_BREAST_COVERED`, `BELLY_EXPOSED`, `ARMPITS_EXPOSED`, or `MALE_BREAST_EXPOSED` also detected in ±4 frame window)*
+- `BUTTOCKS_EXPOSED` *(suppressed when `BUTTOCKS_COVERED` also detected in ±4 frame window)*
 
 ### Tunable constants (top of `nudity.py`):
 ```python
-DEFAULT_THRESHOLD = 0.45             # per-frame confidence minimum
-COVERED_SUPPRESSION_THRESHOLD = 0.30 # covered-counterpart suppression score
+DEFAULT_THRESHOLD = 0.50             # per-frame confidence minimum
+COVERED_SUPPRESSION_THRESHOLD = 0.25 # covered-counterpart suppression score
 NUDE_FRAME_THRESHOLD = 3             # min unsuppressed frames flagged before video = NSFW
 ```

@@ -2,11 +2,6 @@
 test_nudity_logic.py
 --------------------
 Unit tests for the nudity detection logic in app/services/nudity.py
-
-These tests work by feeding MOCK NudeNet detection results directly into
-the core logic functions (_has_nudity, check_nudity) — no real explicit
-images or videos needed. This is the standard, safe way to test ML
-moderation pipelines.
 """
 
 import sys
@@ -53,11 +48,11 @@ print("\n[GROUP 1] Should be SAFE (not flagged)\n")
 run_test("Person in full clothes — no detections", _has_nudity([]), False)
 run_test("Shirtless man — MALE_BREAST_EXPOSED only", _has_nudity([det("MALE_BREAST_EXPOSED", 0.92)]), False)
 run_test("Gym wear — BELLY_EXPOSED + ARMPITS_EXPOSED", _has_nudity([det("BELLY_EXPOSED", 0.88), det("ARMPITS_EXPOSED", 0.85)]), False)
-run_test("Bikini top — FEMALE_BREAST_EXPOSED suppressed by FEMALE_BREAST_COVERED", _has_nudity([det("FEMALE_BREAST_EXPOSED", 0.80), det("FEMALE_BREAST_COVERED", 0.40)]), False)
-run_test("Swimwear — BUTTOCKS_EXPOSED suppressed by BUTTOCKS_COVERED", _has_nudity([det("BUTTOCKS_EXPOSED", 0.82), det("BUTTOCKS_COVERED", 0.35)]), False)
-run_test("Underwear only — genitalia EXPOSED + COVERED fire", _has_nudity([det("FEMALE_GENITALIA_EXPOSED", 0.77), det("FEMALE_GENITALIA_COVERED", 0.35)]), False)
-run_test("Below confidence threshold — score 0.30 (below 0.45)", _has_nudity([det("FEMALE_BREAST_EXPOSED", 0.30)]), False)
-run_test("Just below threshold — score 0.44 (under 0.45)", _has_nudity([det("FEMALE_GENITALIA_EXPOSED", 0.44)]), False)
+run_test("Bikini top — FEMALE_BREAST_EXPOSED suppressed by FEMALE_BREAST_COVERED", _has_nudity([det("FEMALE_BREAST_EXPOSED", 0.80), det("FEMALE_BREAST_COVERED", 0.30)]), False)
+run_test("Swimwear — BUTTOCKS_EXPOSED suppressed by BUTTOCKS_COVERED", _has_nudity([det("BUTTOCKS_EXPOSED", 0.82), det("BUTTOCKS_COVERED", 0.30)]), False)
+run_test("Underwear only — genitalia EXPOSED + COVERED fire", _has_nudity([det("FEMALE_GENITALIA_EXPOSED", 0.77), det("FEMALE_GENITALIA_COVERED", 0.30)]), False)
+run_test("Below confidence threshold — score 0.30 (below 0.50)", _has_nudity([det("FEMALE_BREAST_EXPOSED", 0.30)]), False)
+run_test("Just below threshold — score 0.49 (under 0.50)", _has_nudity([det("FEMALE_GENITALIA_EXPOSED", 0.49)]), False)
 run_test("Open hands / arms — ARMPITS_EXPOSED", _has_nudity([det("ARMPITS_EXPOSED", 0.95)]), False)
 run_test("Sports bra + gym shorts — FEMALE_BREAST_COVERED + BELLY_EXPOSED", _has_nudity([det("FEMALE_BREAST_COVERED", 0.88), det("BELLY_EXPOSED", 0.75)]), False)
 
@@ -69,8 +64,8 @@ run_test("Explicit female genitalia — score 0.65", _has_nudity([det("FEMALE_GE
 run_test("Explicit male genitalia — score 0.58", _has_nudity([det("MALE_GENITALIA_EXPOSED", 0.58)]), True)
 run_test("Anus exposure — score 0.70", _has_nudity([det("ANUS_EXPOSED", 0.70)]), True)
 run_test("Bare buttocks — BUTTOCKS_EXPOSED with no covered counterpart", _has_nudity([det("BUTTOCKS_EXPOSED", 0.77)]), True)
-run_test("Exactly at threshold — FEMALE_BREAST_EXPOSED at 0.45", _has_nudity([det("FEMALE_BREAST_EXPOSED", 0.45)]), True)
-run_test("Covered suppression too weak — COVERED score 0.20 (below 0.30)", _has_nudity([det("FEMALE_BREAST_EXPOSED", 0.85), det("FEMALE_BREAST_COVERED", 0.20)]), True)
+run_test("Exactly at threshold — FEMALE_BREAST_EXPOSED at 0.50", _has_nudity([det("FEMALE_BREAST_EXPOSED", 0.50)]), True)
+run_test("Covered suppression too weak — COVERED score 0.15 (below 0.25)", _has_nudity([det("FEMALE_BREAST_EXPOSED", 0.85), det("FEMALE_BREAST_COVERED", 0.15)]), True)
 
 # Group 3: Video Frame Count Threshold
 print("\n[GROUP 3] Video — Frame count threshold\n")

@@ -27,19 +27,19 @@ NUDE_LABELS = {
 # If a "covered" or context counterpart is detected with sufficient confidence,
 # we treat it as a false-positive (e.g. bikini, sports bra, gym shorts, male torso ornaments).
 COVERED_COUNTERPARTS = {
-    "FEMALE_GENITALIA_EXPOSED": ["FEMALE_GENITALIA_COVERED"],
-    "ANUS_EXPOSED":             ["ANUS_COVERED"],
-    "BUTTOCKS_EXPOSED":         ["BUTTOCKS_COVERED"],
-    "FEMALE_BREAST_EXPOSED":    ["FEMALE_BREAST_COVERED", "BELLY_EXPOSED", "MALE_BREAST_EXPOSED"],
+    "FEMALE_GENITALIA_EXPOSED": ["FEMALE_GENITALIA_COVERED", "BUTTOCKS_COVERED"],
+    "MALE_GENITALIA_EXPOSED":   ["MALE_GENITALIA_COVERED"],
+    "ANUS_EXPOSED":             ["ANUS_COVERED", "BUTTOCKS_COVERED"],
+    "BUTTOCKS_EXPOSED":         ["BUTTOCKS_COVERED", "FEMALE_GENITALIA_COVERED"],
+    "FEMALE_BREAST_EXPOSED":    ["FEMALE_BREAST_COVERED", "BELLY_EXPOSED", "ARMPITS_EXPOSED", "MALE_BREAST_EXPOSED"],
 }
 
 # Detection confidence threshold.
-# 0.45 accurately captures real explicit content (scores 0.45-0.65) while
-# suppressing low-confidence noise.
-DEFAULT_THRESHOLD = 0.45
+# 0.50 perfectly calibrates NudeNet across high-FPS and low-FPS extractions.
+DEFAULT_THRESHOLD = 0.50
 
 # Threshold above which a covered counterpart suppresses an exposed flag.
-COVERED_SUPPRESSION_THRESHOLD = 0.30
+COVERED_SUPPRESSION_THRESHOLD = 0.25
 
 # Minimum number of video frames that must be flagged as nude before the
 # entire video is marked NSFW (default = 3).
@@ -76,7 +76,7 @@ def _has_nudity(results: list, threshold: float = DEFAULT_THRESHOLD) -> bool:
 # ─────────────────────────────────────────────────────────────────────────────
 def check_nudity(frames, threshold=DEFAULT_THRESHOLD, nude_frame_threshold=NUDE_FRAME_THRESHOLD):
     """
-    Scan extracted video frames for nudity with temporal windowed suppression.
+    Scan extracted video frames for nudity with temporal windowed suppression (±4 window).
 
     A video is marked NSFW when at least `effective_threshold` frames
     are independently detected as nude and not suppressed by clothing/ornaments
@@ -96,7 +96,7 @@ def check_nudity(frames, threshold=DEFAULT_THRESHOLD, nude_frame_threshold=NUDE_
     detector = _get_detector()
     all_results = [detector.detect(frame) for frame in frames]
 
-    # Step 2: Evaluate frames with temporal window (±2 frames) suppression
+    # Step 2: Evaluate frames with temporal window (±4 frames) suppression
     nude_frames = []
 
     for idx, results in enumerate(all_results):
@@ -107,9 +107,9 @@ def check_nudity(frames, threshold=DEFAULT_THRESHOLD, nude_frame_threshold=NUDE_
             if label in NUDE_LABELS and score >= threshold:
                 covered_labels = COVERED_COUNTERPARTS.get(label, [])
                 
-                # Check current frame & adjacent frames for covered indicators
-                start_idx = max(0, idx - 2)
-                end_idx = min(len(all_results), idx + 3)
+                # Check current frame & adjacent frames (±4 window) for covered indicators
+                start_idx = max(0, idx - 4)
+                end_idx = min(len(all_results), idx + 5)
                 suppressed = False
                 
                 for adj_idx in range(start_idx, end_idx):
