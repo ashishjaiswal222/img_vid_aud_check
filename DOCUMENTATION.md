@@ -30,3 +30,33 @@ sudo swapon /swapfile
 
 ## 5. Storage (EBS)
 - The ML weights and the PyTorch CPU dependencies are large. Ensure the root EBS volume is at least **30GB**. A full disk will cause unpredictable application crashes during build or startup.
+
+---
+
+## 6. Nudity Detection Tuning (`app/services/nudity.py`)
+
+The NudeNet-based nudity detector has been tuned to significantly reduce false positives on content like gym clothes, bikinis, underwear, open hands/arms, and sports wear.
+
+### Changes from baseline:
+
+| Setting | Old Value | New Value | Reason |
+|---|---|---|---|
+| Detection confidence threshold | `0.6` | `0.75` | Reduces false positives |
+| `FEMALE_BREAST_EXPOSED` label | Flagged | **Still flagged** | Bare breasts are NSFW; bikini/sports bra handled by covered suppression |
+| `BUTTOCKS_EXPOSED` label | Flagged | **Still flagged** | Fully bare buttocks are NSFW; swimwear handled by covered suppression |
+| Covered counterpart suppression | Not present | **Added** | If `_COVERED` label fires alongside `_EXPOSED`, flag is suppressed (handles bikini/underwear) |
+| Min nude frames to flag video | 1 frame | **5 frames** | Single blurry/false-positive frames no longer block a video |
+
+### Only these labels trigger NSFW:
+- `FEMALE_GENITALIA_EXPOSED`
+- `MALE_GENITALIA_EXPOSED`
+- `ANUS_EXPOSED`
+- `FEMALE_BREAST_EXPOSED` *(suppressed when `FEMALE_BREAST_COVERED` also detected — handles bikini/sports bra)*
+- `BUTTOCKS_EXPOSED` *(suppressed when `BUTTOCKS_COVERED` also detected — handles swimwear)*
+
+### Tunable constants (top of `nudity.py`):
+```python
+DEFAULT_THRESHOLD = 0.75          # per-frame confidence minimum
+COVERED_SUPPRESSION_THRESHOLD = 0.55  # covered-counterpart suppression score
+NUDE_FRAME_THRESHOLD = 5          # min frames flagged before video = NSFW
+```
