@@ -78,16 +78,19 @@ def check_nudity(frames, threshold=DEFAULT_THRESHOLD, nude_frame_threshold=NUDE_
     """
     Scan extracted video frames for nudity with temporal windowed suppression.
 
-    A video is marked NSFW when at least `nude_frame_threshold` frames (default = 3)
+    A video is marked NSFW when at least `effective_threshold` frames
     are independently detected as nude and not suppressed by clothing/ornaments
     detected in the frame or adjacent frames.
 
-    Returns:
-        (True,  first_violating_frame_path)  if nude frame count >= threshold
-        (False, None)                         otherwise
+    `effective_threshold` automatically adapts for short videos (e.g. if total
+    extracted frames < nude_frame_threshold) while maintaining the 3-frame
+    noise filter for standard videos.
     """
     if not frames:
         return False, None
+
+    # Dynamically adapt threshold for short videos/clips
+    effective_threshold = max(1, min(nude_frame_threshold, len(frames)))
 
     # Step 1: Detect labels for all frames
     detector = _get_detector()
@@ -123,7 +126,7 @@ def check_nudity(frames, threshold=DEFAULT_THRESHOLD, nude_frame_threshold=NUDE_
 
         if is_nude_frame:
             nude_frames.append(frames[idx])
-            if len(nude_frames) >= nude_frame_threshold:
+            if len(nude_frames) >= effective_threshold:
                 return True, nude_frames[0]
 
     return False, None
