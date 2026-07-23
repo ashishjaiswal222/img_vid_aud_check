@@ -61,7 +61,7 @@ def cleanup(path):
     if os.path.exists(path):
         shutil.rmtree(path, ignore_errors=True)
 
-FFMPEG_PATH = "ffmpeg"  # on EC2 it's globally available
+FFMPEG_PATH = shutil.which("ffmpeg") or "ffmpeg"
 
 def convert_to_h264(input_path, output_dir):
     output_path = os.path.join(output_dir, "converted.mp4")
@@ -76,9 +76,14 @@ def convert_to_h264(input_path, output_dir):
         output_path
     ]
 
-    subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    try:
+        subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if os.path.exists(output_path) and os.path.getsize(output_path) > 0:
+            return output_path
+    except Exception:
+        pass
 
-    return output_path
+    return input_path
 
 
 # ✅ Main API

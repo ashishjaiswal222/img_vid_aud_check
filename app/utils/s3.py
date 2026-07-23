@@ -21,13 +21,17 @@ else:
 
 
 def upload_frame(file_path):
-    key = f"nudity-frames/{uuid.uuid4()}.jpg"
-
-    s3.upload_file(
-        file_path,
-        S3_BUCKET,
-        key,
-        ExtraArgs={"ContentType": "image/jpeg"}
-    )
-
-    return f"{CLOUDFRONT_URL}/{key}"
+    try:
+        key = f"nudity-frames/{uuid.uuid4()}.jpg"
+        s3.upload_file(
+            file_path,
+            S3_BUCKET,
+            key,
+            ExtraArgs={"ContentType": "image/jpeg"}
+        )
+        return f"{CLOUDFRONT_URL}/{key}"
+    except Exception as e:
+        import structlog
+        logger = structlog.get_logger()
+        logger.warning("S3 upload skipped or unconfigured", error=str(e))
+        return file_path
